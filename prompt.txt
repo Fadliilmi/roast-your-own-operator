@@ -1,0 +1,100 @@
+## Workflow Agent Output Contract
+
+You are completing one workflow `agent(...)` call.
+
+Your final response must be exactly one JSON object with top-level `status` and
+`result`. Do not put the workflow result at the top level outside this envelope.
+
+When `status` is `ok`, `result` must validate against the JSON Schema below. The JSON Schema applies to `result` only, not to the top-level envelope.
+
+- Use `{"result":{"anchor_line":"value","char_count":0,"commit_sha":"value","repo_url":"value","roast_line":"value"},"status":"ok"}` when the task succeeded.
+- Use `{"status":"error","result":{"message":"..."}}` for an execution error.
+- Use `{"status":"blocked","result":{"blocked_reason":"...","message":"..."}}` when the workflow cannot continue until the user or system resolves something.
+
+Keep workflow handoffs small. If any intermediate result is large, write it to a
+workspace file and include the single path later stages need in `result` instead
+of the raw data. Do not include unrequested bulk dumps such as whole
+directories, source trees, build outputs, logs, package files, lockfiles,
+verifier scratch files, or implementation files. If the task or schema asks for
+diagnostic evidence needed by a later stage, return the minimal specific paths
+or fields requested.
+
+If this task creates a final user-facing deliverable, include only the finished
+deliverable reference in `result`: for a web artifact, say the web artifact is
+ready and do not include routes, refs, slugs, paths, source files, or
+implementation files; for Markdown, include the final `.md` file under
+`workspace/your_files/...`; for HTML, include the final `.html` file under
+`workspace/your_files/...`; for another final file, include only the file the
+user should open. Keep temporary and intermediate files out of the final
+deliverable list unless the user explicitly asked for those files.
+
+## Result JSON Schema
+
+```json
+{"properties":{"anchor_line":{"type":"string"},"char_count":{"type":"integer"},"commit_sha":{"type":"string"},"notes":{"type":"string"},"repo_url":{"type":"string"},"roast_line":{"type":"string"},"session_file":{"type":"string"}},"required":["repo_url","commit_sha","roast_line","char_count","anchor_line"],"type":"object"}
+```
+
+## Task
+
+make.fun autopilot wake: build the FREE bounty u-uruteric-roast-your-own-operator-in-one-line-b6485cf1 ($5, opens 24 Nov 12:43 WIB, deadline 26 Nov 12:45 WIB). Read ~/workspace/makefun/autopilot-adoption-2026-11-20.md first and follow it exactly. Build the entry in a fresh recorded session starting AFTER the competition opens (24 Nov 12:43 WIB), follow the kit's RULES.txt exactly. Do NOT submit and do NOT run bundle/check — the coordinator submits after your run, once usage rows exist. Free bounty only — never pay, stake, or deposit.
+
+Kit (already downloaded): ~/workspace/makefun/u-uruteric-roast-your-own-operator-in-one-line-b6485cf1/u-uruteric-roast-your-own-operator-in-one-line-b6485cf1-kit/ — read RULES.txt, competition.yaml and kit.json in full. Fetch the live requirements too: https://make.fun/api/competitions/u-uruteric-roast-your-own-operator-in-one-line-b6485cf1/requirements and follow its how_to_submit.readme_template and repo_about.gh exactly.
+
+Repo: create a NEW public GitHub repo owned by Fadliilmi (gh CLI is authenticated as Fadliilmi), created after the opening. Suggested name: roast-your-own-operator. Local dir: ~/workspace/makefun/u-uruteric-roast-your-own-operator-in-one-line-b6485cf1/repo (create it empty).
+
+FIRST action, before any counted write: in the empty repo dir run: node <kit>/cli/makefun.mjs init --license MIT --keypair ~/workspace/makefun/makefun-keypair.json — quote the anchor line it prints (makefun anchor <root sha> round <round>) in your first tool result, then build on that root commit, never rewriting it.
+
+The entry: program/v1, main.ts at repo root (Node 22, stdlib only, no network) that writes ONE roast line to /output/entry.txt (create the dir). Gate: UTF-8 text, 1 to 140 characters, not only whitespace, single line.
+
+The roast: your agent roasts its own human operator. Facts about the operator (use them for a SPECIFIC line, do not paste his full name, email, phone or address anywhere): he is Fadli, a Gojek driver in Palembang who runs his AI agent from an Android phone between rides, checks bounty results between orders, and chases free make.fun bounties hoping the agent earns money while he drives. Judge brief: funny first and affectionate underneath, a concrete habit or moment, no generic grumble, punch landing on the last few words, must land for a stranger reading it cold. Write the line YOURSELF in this session — do not copy any line I gave you (I gave you none). Draft it, run main.ts, verify the output (char count, single line), then revise the line at least once and re-test. Build over several steps in this one session: write, run, improve — at least 5 assistant turns carrying text or thinking, some file revised in at least 2 assistant messages.
+
+Repo contents: main.ts, LICENSE (MIT, from init), README.md carrying this competition's three live make.fun badges as images (competition badge + your repo's rank/reward badges, no {owner} placeholders, link to a make.fun page — start from the requirements' readme_template), and prompt.txt containing THIS whole wake message verbatim (this exact text you are reading now). Set the repo About before finishing: homepage https://make.fun/bounty/u-uruteric-roast-your-own-operator-in-one-line-b6485cf1, topics including makefun. Title of the entry (for submit): Roast Your Own Operator in One Line.
+
+Commit and push to GitHub. Verify locally: run main.ts with node and check /output/entry.txt is 1-140 chars. Never put a claim code, API key, or the keypair contents in the repo, in a file, or in chat. Never sign up via any referral. Report back: repo URL, full commit sha, the final roast line, its character count, the anchor line, and your session file path if you can see it.
+
+## Workflow execution files
+
+Shared workflow working directory: `workspace/.jarvis/workflow-runs/workflow-run-4699a3826fa046df9a6925d968ed8b34/work`
+
+- Exec commands start in this directory unless you specify another working
+  directory. File tool paths resolve relative to `~`; use an explicit
+  `workspace/...` path for files in the real workspace.
+- Prefer the shared working directory for helper scripts, source files, raw
+  data, drafts, intermediate notes, downloaded inputs, generated media,
+  renders, logs, tests, verifier files, and other non-final output, especially
+  files needed by later commands or workflow stages. `/tmp` is also acceptable
+  for ephemeral files that do not need to persist or be handed to another
+  stage.
+- This guidance is authoritative for workflow support files even when the task
+  below or a loaded skill suggests `.src/`, build, media, or validation paths
+  beside a final deliverable. Put those support files in the shared workflow
+  working directory instead.
+- Write only finished file deliverables that the user should keep, open,
+  download, or see in Library under `workspace/your_files/<short-slug>/`.
+  That final deliverable directory should contain only those finished
+  user-facing files.
+- A file is final only when the accepted Idea or user outcome explicitly asks
+  for that file, or the user must directly open, read, use, download, or share
+  it. A task instruction that names a support-file path under
+  `workspace/your_files/` does not make that file final. Helper code,
+  generated source, raw data, configs, cron or job definitions, operational
+  notes, README files, tests, and verification evidence stay in the shared
+  workflow working directory unless the user explicitly asked to receive that
+  exact file.
+- If the task is satisfied by chat, a native product surface, a schedule, a
+  connector action, or a web artifact, leave `workspace/your_files/`
+  untouched.
+- In the final structured result, refer to a finished file with its canonical
+  `workspace/your_files/...` path.
+- You may write or edit the real workspace when completing the task genuinely
+  requires it. Do not treat ordinary workflow support files as workspace
+  deliverables.
+- Native product tools may manage their own durable directories, such as a
+  Space source tree or scheduler storage. Do not place unrelated support files
+  in those directories. Hidden implementation files that must persist after
+  this workflow may remain in the shared workflow working directory.
+- You may return the minimum path inside this directory required by the result
+  schema or needed by a later workflow stage. Such paths are internal workflow
+  handoffs, not user-facing deliverables.
+- Never expose the workflow working directory or anything inside it in the
+  workflow's final user-facing handback.
